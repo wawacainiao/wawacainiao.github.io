@@ -414,6 +414,7 @@ function openModal(id){$(id).classList.add('open')}
 function closeModal(id){$(id).classList.remove('open')}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{AUDIO.sfx('click');b.closest('.modal').classList.remove('open')});
 function safeLog(ev){try{queueLog(ev)}catch(e){}}
+try{setTimeout(flushOutbox,1500)}catch(e){}
 
 /* particles */
 const fx=$('#fx'),fctx=fx.getContext('2d');let parts=[],fxRun=false;

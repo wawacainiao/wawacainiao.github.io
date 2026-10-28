@@ -57,8 +57,7 @@ function giftLine(e){
   if(e.choice==='A'||String(e.token||'').startsWith('WISH'))return 'A · 保留一次愿望机会 → <em>愿望兑换券</em>（2026-12-31 前兑换）';
   const n=e.card||(String(e.token||'').match(/CARD-?(\d)/)||[])[1]||'?';
   return `B · 命运翻牌，翻开第 ${esc(n)} 张 → <em>${esc(e.result||'旺旺大礼包')}</em>`}
-async function load(){const b=$('#ref');b.disabled=true;b.textContent='读取中…';
-  try{const ev=await readAllEvents();
+function render(ev){
     const v=ev.filter(e=>e.type==='visit'),w=ev.filter(e=>e.type==='wish'),g=ev.filter(e=>e.type==='gift');
     $('#sv').textContent=v.length;$('#sw').textContent=w.length;$('#sg').textContent=g.length;$('#sl').textContent=v.length?fmt(v[v.length-1].t):'-';
     $('#gifts').className=g.length?'':'empty';
@@ -66,10 +65,15 @@ async function load(){const b=$('#ref');b.disabled=true;b.textContent='读取中
     $('#wishes').className=w.length?'':'empty';
     $('#wishes').innerHTML=w.length?w.slice().reverse().map(e=>`<div class="wish"><time>${fmt(e.t)}</time>${esc(e.text)}</div>`).join(''):'还没有心愿';
     const label=e=>e.type==='visit'?'进门（解开暗号）':e.type==='wish'?'许下心愿':e.type==='gift'?('拆礼物：'+giftLine(e)):esc(e.type);
-    $('#tl').innerHTML=ev.length?ev.slice().reverse().map(e=>`<li><time>${fmt(e.t)}</time><span>${label(e)}</span></li>`).join(''):'<li class="empty">还没有人来过</li>';
-    $('#upd').textContent='更新于 '+fmt(new Date().toISOString())+'（北京时间）';
-  }catch(e){$('#gifts').innerHTML='<span class="err">读取失败，点右上角刷新重试</span>'}
-  b.disabled=false;b.textContent='刷新'}
+    $('#tl').innerHTML=ev.length?ev.slice().reverse().map(e=>`<li><time>${fmt(e.t)}</time><span>${label(e)}</span></li>`).join(''):'<li class="empty">还没有人来过</li>';}
+let busy=false;
+async function load(){if(busy)return;busy=true;const b=$('#ref');b.disabled=true;b.textContent='读取中…';$('#upd').textContent='正在同步最新记录…';
+  try{const r=await readAllEvents(ev=>render(ev));render(r.events);
+    $('#upd').textContent='更新于 '+fmt(new Date().toISOString())+'（北京时间）'+(r.failed?` · 有 ${r.failed} 条暂时没读到，稍后自动重试`:'');
+    if(r.failed)setTimeout(load,4000);
+  }catch(e){$('#upd').textContent='服务器这会儿有点卡，已显示上次的记录，3 秒后自动重试…';setTimeout(load,3000)}
+  busy=false;b.disabled=false;b.textContent='刷新'}
+setInterval(()=>{if(!document.hidden)load()},30000);
 $('#ref').onclick=load;load();
 </script>
 </body>
