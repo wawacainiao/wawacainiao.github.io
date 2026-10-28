@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>生日小屋 · 后台</title>
+<style>
+@font-face{font-family:"Px";src:url(px.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"Wish";src:url(wish.woff2) format("woff2");font-display:swap}
+:root{--ink:#3a241e;--cream:#fff8ec;--cream2:#f3dcc4;--pink:#ff8fab;--pink2:#e5577d;--butter:#ffd45e;--mint:#7fd8be;--px:"Px","PingFang SC","Microsoft YaHei",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(#1f2047 0 30%,#2b2d5c 30% 60%,#3b3672 60%) fixed;color:var(--ink);font-family:var(--px);min-height:100vh;padding:24px 14px 60px;-webkit-font-smoothing:none}
+.wrap{max-width:720px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:20px;color:#fff}
+h1{font-size:24px;font-weight:400;text-shadow:3px 3px 0 var(--pink2)}
+.k{font-size:12px;letter-spacing:.3em;color:var(--butter);margin-bottom:6px}
+.muted{font-size:12px;color:rgba(255,255,255,.65);margin-top:6px}
+button{font:inherit;cursor:pointer;border:4px solid var(--ink);padding:8px 16px;background:var(--butter);color:var(--ink);box-shadow:inset -4px -4px 0 #e0a92c,0 4px 0 var(--ink)}
+button:active{transform:translateY(4px);box-shadow:inset -4px -4px 0 #e0a92c}
+button[disabled]{opacity:.6}
+.box{background:var(--cream);border:4px solid var(--ink);box-shadow:inset -4px -4px 0 var(--cream2),6px 6px 0 rgba(0,0,0,.35);padding:16px;margin-bottom:18px}
+h2{font-size:18px;font-weight:400;margin-bottom:12px;color:var(--pink2)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{text-align:center;padding:12px 4px;background:#fff;border:4px solid var(--ink);box-shadow:inset -4px -4px 0 #eee}
+.stat b{display:block;font-size:24px;font-weight:400;color:var(--pink2)}
+.stat span{font-size:12px;color:#7a5a4c}
+.g{padding:12px;border:3px solid var(--ink);background:#fff;margin-bottom:10px}
+.g .t{font-size:12px;color:#7a5a4c;margin-bottom:4px}
+.g .r{font-size:16px}
+.g .r em{font-style:normal;background:var(--butter);padding:0 6px;border:2px solid var(--ink)}
+.g .o{font-size:12px;color:#7a5a4c;margin-top:6px;line-height:1.6}
+.g .n{font-size:11px;color:#a08878;margin-top:4px;word-break:break-all}
+.wish{padding:12px 14px;background:repeating-linear-gradient(180deg,#fffdf4 0 28px,#ffc2d1 28px 30px);border:3px solid var(--ink);margin-bottom:10px;white-space:pre-wrap;line-height:30px;font-size:18px;color:#3b2a8a;font-family:"Wish",var(--px)}
+.wish time{display:block;font-size:12px;color:#7a5a4c;line-height:1.6;margin-bottom:2px}
+.tl{list-style:none}
+.tl li{display:flex;gap:12px;padding:8px 0;border-bottom:2px dashed var(--cream2);font-size:13px;line-height:1.5}
+.tl time{color:#7a5a4c;white-space:nowrap}
+.empty{color:#7a5a4c;font-size:13px}
+.err{color:#e5577d}
+@media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body><div class="wrap">
+<header><div><div class="k">★ BACKSTAGE ★</div><h1>锅嘚刚生日后台</h1><div class="muted" id="upd"></div></div><button id="ref">刷新</button></header>
+<div class="stats"><div class="stat"><b id="sv">-</b><span>进门次数</span></div><div class="stat"><b id="sw">-</b><span>心愿条数</span></div><div class="stat"><b id="sg">-</b><span>拆礼物次数</span></div><div class="stat"><b id="sl" style="font-size:13px;line-height:2.2">-</b><span>最近进门</span></div></div>
+<div class="box"><h2>每次拆礼物的结果</h2><div id="gifts" class="empty">读取中…</div></div>
+<div class="box"><h2>全部心愿</h2><div id="wishes" class="empty">读取中…</div></div>
+<div class="box"><h2>完整记录</h2><ul class="tl" id="tl"><li class="empty">读取中…</li></ul></div>
+</div>
+<script src="store.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const fmt=iso=>{try{return new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(iso))}catch(e){return iso}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function giftLine(e){
+  if(e.choice==='A'||String(e.token||'').startsWith('WISH'))return 'A · 保留一次愿望机会 → <em>愿望兑换券</em>（2026-12-31 前兑换）';
+  const n=e.card||(String(e.token||'').match(/CARD-?(\d)/)||[])[1]||'?';
+  return `B · 命运翻牌，翻开第 ${esc(n)} 张 → <em>${esc(e.result||'旺旺大礼包')}</em>`}
+async function load(){const b=$('#ref');b.disabled=true;b.textContent='读取中…';
+  try{const ev=await readAllEvents();
+    const v=ev.filter(e=>e.type==='visit'),w=ev.filter(e=>e.type==='wish'),g=ev.filter(e=>e.type==='gift');
+    $('#sv').textContent=v.length;$('#sw').textContent=w.length;$('#sg').textContent=g.length;$('#sl').textContent=v.length?fmt(v[v.length-1].t):'-';
+    $('#gifts').className=g.length?'':'empty';
+    $('#gifts').innerHTML=g.length?g.slice().reverse().map((e,i)=>`<div class="g"><div class="t">第 ${g.length-i} 次 · ${fmt(e.t)}</div><div class="r">${giftLine(e)}</div>${e.others?`<div class="o">翻开后各张牌：${esc(e.others)}</div>`:''}<div class="n">券号 ${esc(e.token)}</div></div>`).join(''):'还没有拆过礼物';
+    $('#wishes').className=w.length?'':'empty';
+    $('#wishes').innerHTML=w.length?w.slice().reverse().map(e=>`<div class="wish"><time>${fmt(e.t)}</time>${esc(e.text)}</div>`).join(''):'还没有心愿';
+    const label=e=>e.type==='visit'?'进门（解开暗号）':e.type==='wish'?'许下心愿':e.type==='gift'?('拆礼物：'+giftLine(e)):esc(e.type);
+    $('#tl').innerHTML=ev.length?ev.slice().reverse().map(e=>`<li><time>${fmt(e.t)}</time><span>${label(e)}</span></li>`).join(''):'<li class="empty">还没有人来过</li>';
+    $('#upd').textContent='更新于 '+fmt(new Date().toISOString())+'（北京时间）';
+  }catch(e){$('#gifts').innerHTML='<span class="err">读取失败，点右上角刷新重试</span>'}
+  b.disabled=false;b.textContent='刷新'}
+$('#ref').onclick=load;load();
+</script>
+</body>
+</html>
