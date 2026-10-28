@@ -707,11 +707,11 @@ const imgCache={};
 function loadImg(src){if(imgCache[src])return imgCache[src];return imgCache[src]=new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
 async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   try{await Promise.race([Promise.all([document.fonts.load('48px Px','兑换券锅嘚刚旺大礼包愿望'),document.fonts.load('48px Wish','愿你新的一岁')]),new Promise(r=>setTimeout(r,1500))])}catch(e){}
-  const [shiba,cake,gift]=await Promise.all([loadImg(SPR.shiba),loadImg(SPR.cake),loadImg(SPR.gift)]);
+  const [shiba,cake,gift]=await Promise.all([loadImg(SPR.shiba),loadImg('g_cake.png').catch(()=>loadImg(SPR.cake)),loadImg(SPR.gift)]);
   const W=1080,H=1680,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');c.imageSmoothingEnabled=false;
   const INK='#3a241e',F='"Px","PingFang SC","Microsoft YaHei",monospace',FW='"Wish","Px","PingFang SC",sans-serif',U=12;
-  const GOLD='#e9b33a',GOLDL='#ffe08a',GOLDD='#a8701c',CREAM='#fff7e6';
-  const MAIN=isA?'#ff6f91':'#ef5b3c',MAIN2=isA?'#c9406a':'#b33a22',MAINL=isA?'#ffc2d1':'#ffc7a8';
+  const GOLD='#d4a646',GOLDL='#f6dc93',GOLDD='#8f6a24',CREAM='#fbf4e4';
+  const MAIN=isA?'#8e2440':'#962a22',MAIN2=isA?'#5e1428':'#631810',MAINL=isA?'#e9c9c4':'#ecccb8';
   const R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
   // seeded random so each coupon looks the same for the same token
   let sd=0;for(const ch of tok)sd=(sd*31+ch.charCodeAt(0))>>>0;const rnd=()=>((sd=(sd*1664525+1013904223)>>>0)/4294967296);
@@ -720,12 +720,12 @@ async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   const spark=(x,y,s,col)=>{R(x,y-s,s,s*3,col);R(x-s,y,s*3,s,col)};
   const stepped=(x,y,w,h,col,s)=>{R(x+s*2,y,w-s*4,h,col);R(x+s,y+s,w-s*2,h-s*2,col);R(x,y+s*2,w,h-s*4,col)};
   // ---- warm background: stepped wine-to-plum bands + soft dots ----
-  const bands=isA?['#5a1f3f','#6a2446','#7a2a4c','#8a3152','#9a3a58']:['#5a2418','#6b2c1c','#7c3420','#8d3d25','#9c472b'];
+  const bands=isA?['#1d1424','#24182b','#2b1c32','#321f38','#39233f']:['#1c1512','#231a15','#2a1f18','#31241b','#38291e'];
   const bh=H/bands.length;bands.forEach((b,i)=>R(0,i*bh,W,bh+1,b));
   for(let y=24;y<H;y+=72)for(let x=(y/72%2)*36+24;x<W;x+=72)R(x,y,6,6,'rgba(255,224,138,.10)');
-  for(let i=0;i<46;i++){const x=rnd()*W,y=rnd()*H,t=rnd();if(t<.4)spark(x,y,6,'rgba(255,224,138,.55)');else if(t<.7)R(x,y,6,6,'rgba(255,255,255,.35)');else heart(x,y,3,'rgba(255,170,190,.35)')}
+  for(let i=0;i<46;i++){const x=rnd()*W,y=rnd()*H,t=rnd();if(t<.45)spark(x,y,6,'rgba(246,220,147,.55)');else R(x,y,6,6,'rgba(246,220,147,.35)')}
   // ---- string lights across the top ----
-  const bulbs=['#ffd45e','#ff8fab','#7fd8be','#9fc8ff','#ffb36b'];
+  const bulbs=['#f6dc93','#ffe9b8','#f6dc93','#ffd27a','#ffe9b8'];
   const wire=x=>{const seg=W/3,t=(x%seg)/seg;return 30+Math.round(t*(1-t)*4*46)};
   for(let x=0;x<W;x+=6)R(x,wire(x),6,4,'#2a1410');
   for(let k=0;k<12;k++){const x=45+k*90,y=wire(x)+2,col=bulbs[k%5];
@@ -760,9 +760,9 @@ async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   for(let x=bx+30;x<bx+bw-30;x+=36)R(x+18,by+bH-30,12,6,'rgba(255,255,255,.35)');
   c.font=`100px ${F}`;const title=isA?'愿望兑换券':'旺旺大礼包';const ty=by+bH/2+36;
   c.fillStyle=INK;[[-6,0],[6,0],[0,-6],[0,6],[6,6],[12,12],[-6,6],[6,-6]].forEach(([dx,dy])=>c.fillText(title,W/2+dx,ty+dy));
-  c.fillStyle=GOLDL;c.fillText(title,W/2,ty+4);c.fillStyle='#fff';c.fillText(title,W/2,ty);
+  c.fillStyle=GOLDD;c.fillText(title,W/2,ty+4);c.fillStyle=GOLDL;c.fillText(title,W/2,ty);
   // ---- bunting under banner ----
-  const fl=['#ff8fab','#ffd45e','#7fd8be','#9fc8ff','#ffb36b'];const fy=by+bH+30;
+  const fl=[MAIN,GOLD,MAIN,GOLD,MAIN];const fy=by+bH+30;
   R(X+40,fy,TW-80,6,INK);
   for(let i=0,x=X+60;x<X+TW-90;i++,x+=60){const col=fl[i%5];for(let r=0;r<5;r++){R(x+r*6,fy+6+r*9,48-r*12,9,INK);R(x+r*6+4,fy+6+r*9,40-r*12,9,col)}}
   // ---- art stage with warm glow ----
@@ -770,13 +770,15 @@ async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   // little rug
   stepped(W/2-330,Y+800,660,60,INK,U);stepped(W/2-324,Y+806,648,48,MAINL,U);for(let x=W/2-300;x<W/2+300;x+=48)R(x,Y+824,24,12,MAIN);
   const S=6;c.drawImage(shiba,W/2-360,Y+830-shiba.height*S,shiba.width*S,shiba.height*S);
-  if(isA)c.drawImage(cake,W/2+40,Y+830-cake.height*S,cake.width*S,cake.height*S);else c.drawImage(gift,W/2+70,Y+830-gift.height*S,gift.width*S,gift.height*S);
-  heart(W/2-30,Y+470,6,MAIN);heart(W/2+330,Y+520,4,'#ff8fab');heart(X+90,Y+600,4,'#ff8fab');
-  pstar(X+110,Y+470,U,'#ffd45e');pstar(X+TW-110,Y+430,U*1.4,'#ffd45e');pstar(X+TW-90,Y+700,U*.8,'#9fc8ff');spark(X+160,Y+760,8,GOLD);spark(X+TW-170,Y+790,8,GOLD);
-  for(let i=0;i<22;i++){const x=X+70+rnd()*(TW-140),y=Y+420+rnd()*380;if(Math.abs(x-W/2)<260&&y>Y+560)continue;R(x,y,10,6,fl[i%5])}
+  if(isA)c.drawImage(cake,W/2+40,Y+830-cake.height*S,cake.width*S,cake.height*S);else{let g2=gift;try{const o=document.createElement('canvas');o.width=gift.width;o.height=gift.height;const oc=o.getContext('2d');oc.drawImage(gift,0,0);const d=oc.getImageData(0,0,o.width,o.height),p=d.data;
+    for(let i=0;i<p.length;i+=4){const r=p[i],g=p[i+1],b=p[i+2];if(p[i+3]&&r>150&&b>r*0.45&&g<r*0.8&&r-g>50){const l=(r+g+b)/765;p[i]=Math.round(90+l*110);p[i+1]=Math.round(18+l*40);p[i+2]=Math.round(34+l*44)}}oc.putImageData(d,0,0);g2=o}catch(e){}
+    c.drawImage(g2,W/2+70,Y+830-gift.height*S,gift.width*S,gift.height*S)}
+  heart(W/2-30,Y+470,5,MAIN);
+  pstar(X+110,Y+470,U*.8,GOLD);pstar(X+TW-110,Y+430,U*1.2,GOLD);pstar(X+TW-90,Y+700,U*.6,GOLD);spark(X+160,Y+760,8,GOLD);spark(X+TW-170,Y+790,8,GOLD);
+  for(let i=0;i<12;i++){const x=X+70+rnd()*(TW-140),y=Y+420+rnd()*380;if(Math.abs(x-W/2)<260&&y>Y+560)continue;R(x,y,6,6,GOLD)}
   // warm wish line
-  c.font=`54px ${FW}`;c.fillStyle=MAIN2;const msg=isA?'愿你新的一岁，被温柔和好运包围':'甜甜的旺旺，送给最好的哥哥';
-  c.fillText(msg,W/2+3,Y+933);c.fillStyle=INK;c.fillText(msg,W/2,Y+930);
+  c.font=`64px ${FW}`;c.fillStyle=GOLD;const msg='岁岁平安，好运常伴';
+  c.fillText(msg,W/2+4,Y+934);c.fillStyle=MAIN2;c.fillText(msg,W/2,Y+930);spark(W/2-310,Y+908,8,GOLD);spark(W/2+310,Y+908,8,GOLD);
   // ---- perforation ----
   const py=Y+990;for(let x=X+70;x<X+TW-70;x+=36)R(x,py,18,6,'rgba(58,36,30,.45)');
   [[X-U*2,py-40],[X+TW-80+U*2,py-40]].forEach(([x,y])=>{stepped(x,y,80,80,INK,U);stepped(x+6,y+6,68,68,bands[2],U)});
@@ -785,7 +787,7 @@ async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   const icon={heart:(x,yy)=>heart(x+14,yy-14,4,MAIN),star:(x,yy)=>pstar(x+14,yy-16,7,GOLD),clock:(x,yy)=>{stepped(x,yy-34,32,32,INK,4);stepped(x+4,yy-30,24,24,'#fff',4);R(x+14,yy-26,4,10,INK);R(x+14,yy-18,8,4,INK)},scroll:(x,yy)=>{R(x,yy-30,30,24,GOLDL);R(x,yy-30,30,4,GOLDD);R(x,yy-10,30,4,GOLDD);R(x+6,yy-22,18,3,INK);R(x+6,yy-16,12,3,INK)}};
   const lab=(ic,t,v,col)=>{icon[ic](lx,y);c.font=`34px ${F}`;c.fillStyle='#8a6656';c.fillText(t,lx+48,y);c.fillStyle=col||INK;c.font=`46px ${F}`;c.fillText(v,vx,y+2);
     for(let x=vx;x<X+TW-260;x+=18)R(x,y+18,9,3,'rgba(233,179,58,.7)');y+=82};
-  lab('heart','持券人','锅嘚刚','#3b2a8a');
+  lab('heart','持券人','锅嘚刚',MAIN);
   lab('star','可兑换',isA?'任意一个愿望 ×1':'旺旺大礼包 ×1',MAIN2);
   lab('clock',isA?'有效期':'签发日',isA?'2026.12.31 前':niceDate());
   lab('scroll','小规则',isA?'不可违反道德':'见到策划人当面领取');
@@ -793,8 +795,8 @@ async function drawCoupon(tok){const isA=tok.startsWith('WISH');
   // ---- wax seal ----
   c.save();c.translate(X+TW-150,py+96);c.rotate(-.12);c.scale(.82,.82);
   const disc=(r,col)=>{c.fillStyle=col;for(let yy=-r;yy<r;yy+=6){const hw=Math.floor(Math.sqrt(r*r-yy*yy)/6)*6;c.fillRect(-hw,yy,hw*2,6)}};
-  [[-1,0],[1,0],[0,-1],[0,1],[-.7,-.7],[.7,-.7],[-.7,.7],[.7,.7]].forEach(([a,b])=>{c.save();c.translate(a*70,b*70);disc(26,'#a32a3a');c.restore()});
-  disc(96,INK);disc(90,'#c8374a');disc(72,'#a32a3a');disc(66,'#c8374a');
+  [[-1,0],[1,0],[0,-1],[0,1],[-.7,-.7],[.7,-.7],[-.7,.7],[.7,.7]].forEach(([a,b])=>{c.save();c.translate(a*70,b*70);disc(26,'#741624');c.restore()});
+  disc(96,INK);disc(90,'#9a2233');disc(72,'#741624');disc(66,'#9a2233');
   c.fillStyle='rgba(255,255,255,.25)';c.fillRect(-60,-72,30,12);c.fillRect(-72,-60,12,24);
   c.textAlign='center';c.fillStyle=GOLDL;c.font=`46px ${F}`;c.fillText('寿星',0,8);c.font=`20px ${F}`;c.fillText('专属认证',0,40);heart(0,-36,3,GOLDL);c.restore();
   return cv.toDataURL('image/png')}
